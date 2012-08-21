@@ -52,6 +52,7 @@ module CmsRails
 
     # Configure sensitive parameters which will be filtered from the log file.
     config.filter_parameters += [:password, :password_confirmation]
+    config.assets.precompile += ['dashboard.css', 'dashboard.js', 'admin.css', 'admin.js']
 
     # Enable the asset pipeline
     config.assets.enabled = true
@@ -63,6 +64,8 @@ module CmsRails
       # Haml generator
       g.template_engine :haml
     end
+
+    config.active_record.mass_assignment_sanitizer = :strict
 
   end
 end

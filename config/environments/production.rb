@@ -23,15 +23,16 @@ CmsRails::Application.configure do
   # config.logger = SyslogLogger.new
 
   # Use a different cache store in production
-  # config.cache_store = :mem_cache_store
+  config.cache_store = :memory_store
 
   # TODO: enable asset compression
   config.assets.compress = false
-  config.assets.compile = true
+  config.assets.compile = false # These should be precompiled
 
   # Disable Rails's static asset server
   # In production, Apache or nginx will already do this
   config.serve_static_assets = true
+  config.assets.digest = true
 
   # Enable serving of images, stylesheets, and javascripts from an asset server
   # config.action_controller.asset_host = "http://assets.example.com"
@@ -40,7 +41,9 @@ CmsRails::Application.configure do
   # config.action_mailer.raise_delivery_errors = false
 
   # Enable threaded mode
-  # config.threadsafe!
+  unless File.basename($0) == "rake"
+    config.threadsafe!
+  end
 
   # Enable locale fallbacks for I18n (makes lookups for any locale fall back to
   # the I18n.default_locale when a translation can not be found)

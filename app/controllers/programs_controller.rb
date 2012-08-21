@@ -116,4 +116,55 @@ class ProgramsController < ApplicationController
     @controls.all.sort_by(&:slug_split_for_sort)
     render :layout => nil, :locals => { :controls => @controls }
   end
+
+  def section_controls
+    @program = Program.find(params[:id])
+    if @program.company?
+      @sections = @program.controls.includes(:implemented_controls => { :control_sections => :section }).map { |cc| cc.implemented_controls.map { |ic| ic.control_sections.map { |cs| cs.section } }.flatten }.flatten.uniq
+    else
+      @sections = @program.sections.includes(:controls => :implementing_controls).all
+    end
+
+    @sections.sort_by(&:slug_split_for_sort)
+    render :layout => nil, :locals => { :sections => @sections }
+  end
+
+  def control_sections
+    @program = Program.find(params[:id])
+    @controls = @program.controls.includes(:sections)
+    if params[:s]
+      @controls = @controls.search(params[:s])
+    end
+    @controls.all.sort_by(&:slug_split_for_sort)
+    render :layout => nil, :locals => { :controls => @controls }
+  end
+
+  def category_controls
+    @program = Program.find(params[:id])
+
+    @category_tree = Category.roots.all.map do |category|
+      branches = category.children.all.map do |subcategory|
+        controls = subcategory.controls.where(:program_id => @program.id).all
+        if !controls.empty?
+          [subcategory, controls]
+        end
+      end.compact
+      if !branches.empty?
+        [category, branches]
+      end
+    end.compact
+
+    uncategorized_controls = Control.
+      includes(:categorizations).
+      where(
+        :program_id => @program.id,
+        :categorizations => { :categorizable_id => nil }).
+      all
+
+    if !uncategorized_controls.empty?
+      @category_tree.push([nil, uncategorized_controls])
+    end
+
+    render :layout => nil, :locals => { }
+  end
 end

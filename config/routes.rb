@@ -87,45 +87,71 @@ CmsRails::Application.routes.draw do
     end
   end
 
-  resources :programs, :as => 'flow_programs', :only => [:show, :new, :edit, :create, :update] do
+  resources :programs, :as => 'flow_programs', :only => [:show, :new, :edit, :create, :update, :destroy] do
     member do
       get 'tooltip'
       get 'import'
       get 'sections'
       get 'controls'
+      get 'section_controls'
+      get 'control_sections'
+      get 'category_controls'
     end
   end
 
   resources :cycles, :as => 'flow_cycles', :only => [:show, :create, :update]
 
-  resources :sections, :as => 'flow_sections', :only => [:new, :edit, :create, :update] do
+  resources :sections, :as => 'flow_sections', :only => [:new, :edit, :create, :update, :destroy] do
     member do
       get 'tooltip'
     end
   end
 
-  resources :controls, :as => 'flow_controls', :only => [:index, :show, :new, :edit, :create, :update] do
+  resources :controls, :as => 'flow_controls', :only => [:index, :show, :new, :edit, :create, :update, :destroy] do
     member do
       get 'tooltip'
+      get 'sections'
+      get 'implemented_controls'
+      get 'implementing_controls'
     end
   end
 
-  resources :systems, :as => 'flow_systems', :only => [:show, :new, :edit, :create, :update] do
+  resources :systems, :as => 'flow_systems', :only => [:index, :show, :new, :edit, :create, :update, :destroy] do
     member do
       get 'tooltip'
+      get 'subsystems_list'
+      get 'subsystems_edit'
+      post 'subsystems_update'
+      get 'controls_list'
+      get 'controls_edit'
+      post 'controls_update'
     end
   end
+
+  resources :transactions, :as => 'flow_transactions', :only => [:new, :edit, :create, :update, :destroy]
 
   resources :accounts, :as => 'flow_accounts'
   resources :people, :as => 'flow_people' do
     collection do
       get 'list'
+      get 'list_edit'
+      post 'list_update'
     end
   end
 
   resources :documents, :as => 'flow_documents' do
     collection do
       get 'list'
+      get 'list_edit'
+      post 'list_update'
+    end
+  end
+
+  resources :categories, :as => 'flow_categories' do
+    collection do
+      get 'list'
+      get 'list_edit'
+      post 'list_update'
     end
   end
 
@@ -146,8 +172,8 @@ CmsRails::Application.routes.draw do
   post "mapping/map_ccontrol"
   put "mapping/update/:section_id" => 'mapping#update', :as => 'mapping_update'
   get "mapping/buttons", :as => :mapping_buttons
-  post "mapping/selected_section/:section_id" => 'mapping#selected_section', :as => :mapping_selected_section
-  post "mapping/selected_control/:control_id" => 'mapping#selected_control', :as => :mapping_selected_control
+  get "mapping/selected_section/:section_id" => 'mapping#selected_section', :as => :mapping_selected_section
+  get "mapping/selected_control/:control_id" => 'mapping#selected_control', :as => :mapping_selected_control
   match 'mapping/sections/:program_id' => 'mapping#find_sections', :as => :mapping_sections
   match 'mapping/controls/:program_id/:control_type' => 'mapping#find_controls', :as => :mapping_controls
   post "mapping/create_rcontrol" => 'mapping#create_rcontrol', :as => 'mapping_create_rcontrol'

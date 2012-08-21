@@ -43,6 +43,11 @@ jQuery(function($) {
     $(this).find('.expander').eq(0).toggleClass('in');
   });
 
+  // When clicking a slot-link, don't toggle collapse
+  $('body').on('click', '.slot > a', function(e) {
+    e.stopPropagation();
+  });
+
   // expandAll and shrinkAll buttons
   $('body').on('click', '.tabbable a.expandAll', function(e) {
     $(this).closest('.tabbable').find('.tab-pane:visible').find('.collapse').collapse({ toggle: false }).collapse('show');
@@ -99,14 +104,14 @@ jQuery(function($) {
   // Initialize Quick Search handlers
   $('body').on('keypress', '.modal nav > .widgetsearch', function (e) {
     if (e.which == 13) {
+      // If this input is within a form, don't submit the form
+      e.preventDefault();
+
       var $this = $(this)
-        , $list = $this.closest('.modal').find('.modal-body > ul')
+        , $list = $this.closest('.modal').find('.modal-body ul[data-list-href]')
         , href = $list.data('list-href') + '?' + $.param({ s: $this.val() });
       $.get(href, function(data) {
-        $list.empty();
-        $.each(data, function(i, item) {
-          $list.tmpl_additem(item);
-        });
+        $list.tmpl_setitems(data);
       });
     }
   });
@@ -129,14 +134,37 @@ jQuery(function($) {
   });
 
   $('body').on('click', '[data-toggle="list-remove"]', function(e) {
-    $(this).closest('li').remove();
     e.preventDefault();
+    $(this).closest('li').remove();
+  });
+
+  $('body').on('click', '[data-toggle="list-select"]', function(e) {
+    e.preventDefault();
+
+    var $this = $(this)
+      , $li = $this.closest('li')
+      , target = $li.closest('ul').data('list-target')
+      , data;
+
+    if (target) {
+      data = $.extend({}, $this.data('context') || {}, $this.data());
+      $(target).tmpl_mergeitems([data]);
+    }
   });
 });
 
 jQuery(function($) {
-  // Trigger first tab immediately
-  $('.tabbable > ul > li:first-child > a').tab('show');
+  // Onload trigger tab with 'active' class or default to first tab
+  $('.tabbable > ul').each(function(i, el) {
+    var $tab = $(this).find('> li.active');
+    if (!$tab.length)
+      $tab = $(this).find('> li:first-child');
+    $tab
+      .removeClass('active')
+      .find('> a')
+      .tab('show');
+  });
+  //$('.tabbable > ul > li:first-child > a').tab('show');
 });
 
 
@@ -156,7 +184,7 @@ function init_mapping() {
       $(this).closest('.row-fluid').find('.regulationslot').addClass('selected');
 
       if ($dialog.is(':visible')) {
-        $dialog.load($(this).closest('.row-fluid').find('a.controls').data('href'));
+        $dialog.load($(this).closest('.row-fluid').find('a.controllist').data('href'));
       }
     });
   $('#rcontrol_list')
@@ -174,7 +202,7 @@ function init_mapping() {
 
   var $dialog = $('<div class="modal hide fade"></div>').appendTo('body');
   $dialog.draggable({ handle: '.modal-header' });
-  $('#section_list').on('click', 'a.controls', function() {
+  $('#section_list').on('click', 'a.controllist', function() {
     // Save the current href for reloadability
     $dialog.data('href', $(this).data('href'));
     $dialog.load($(this).data('href'), function() {
@@ -201,7 +229,7 @@ function init_mapping() {
 jQuery(function($) {
   var $dialog = $('<div class="modal hide fade"></div>').appendTo('body');
   $dialog.draggable({ handle: '.modal-header' });
-  $('#regulations, #controls').on('click', 'a.controls', function(e) {
+  $('#regulations, #controls').on('click', 'a.controllist', function(e) {
     e.preventDefault();
     $dialog.load($(this).attr('href'), function() {
       $dialog.modal_form({ backdrop: false }).modal_form('show');

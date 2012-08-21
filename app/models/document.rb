@@ -7,6 +7,8 @@ class Document < ActiveRecord::Base
   include AuthoredModel
   VALID_SCHEMES = ['http', 'https']
 
+  attr_accessible :link, :title, :document_descriptor, :good, :reviewed
+
   validate :link do
     begin
       if link.nil? || VALID_SCHEMES.include?(link.scheme)
@@ -19,10 +21,16 @@ class Document < ActiveRecord::Base
     end
   end
 
+  validates :link,
+    :uniqueness => true, :allow_blank => true
+
+  validates :title, :presence => true
+
+  has_many :object_documents, :dependent => :destroy
+
   belongs_to :document_descriptor
 
-  validates :link,
-    :uniqueness => true, :allow_blank => true, :presence => true
+  is_versioned_ext
 
   def display_name
     title
@@ -36,15 +44,21 @@ class Document < ActiveRecord::Base
   end
 
   def link=(value)
-    if !VALID_SCHEMES.include?(value.split(':')[0])
+    if !value.blank? && !VALID_SCHEMES.include?(value.split(':')[0])
       value = "http://#{value}"
     end
     write_attribute(:link, value)
   end
 
-  is_versioned_ext
+  def link_url
+    link && link.to_s
+  end
 
   def complete?
     !link.nil? && !link.to_s.blank?
+  end
+
+  def descriptor
+    (document_descriptor && document_descriptor.title) || ''
   end
 end

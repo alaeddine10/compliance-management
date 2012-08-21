@@ -4,7 +4,7 @@ module AuthoredModel
   # If we don't do this, the persistence layer thinks all non-strings params are modifications
   # where in fact we might just have changed false => 0, which is a no-op.  This is important
   # for versioning so we don't create no-change versions when nothing was changed.
-  def authored_update(author, params)
+  def authored_update(author, params, mass_assign = true)
     tparams = {}
     trels = {}
     params.each do |key, value|
@@ -42,7 +42,7 @@ module AuthoredModel
         #    end
         #  end
         else
-          raise "can only handle one2many or many2many relations" 
+          raise "can only handle one2many or many2many relations"
         end
         tparams[base_key] = value.map { |id| relation.klass.find(id) }
         trels[relation] = new_ids
@@ -50,7 +50,17 @@ module AuthoredModel
         tparams[key] = value
       end
     end
-    return false unless update_attributes(tparams.merge(:modified_by_id => author.id))
+    self.modified_by = author
+
+    if mass_assign
+      self.assign_attributes(tparams)
+    else
+      tparams.each do |key, value|
+        send(key + '=', value)
+      end
+    end
+
+    return false unless save
 
     trels.each do |relation, new_ids|
       if relation.is_a? ActiveRecord::Associations::HasManyThroughAssociation

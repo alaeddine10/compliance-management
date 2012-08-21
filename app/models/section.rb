@@ -8,6 +8,8 @@ class Section < ActiveRecord::Base
   include SluggedModel
   include SearchableModel
 
+  attr_accessible :title, :slug, :description, :program
+
   before_save :upcase_slug
   before_save :update_parent_id
 
@@ -128,6 +130,17 @@ class Section < ActiveRecord::Base
     controls.map do |control|
       [control] + control.implementing_controls.to_a
     end.flatten
+  end
+
+  def ancestors
+    # Not only need to look for instance's ancestor sections, but
+    # also the ancestor sections of all ancestor controls.
+    if !parent
+      return []
+    end
+
+    ancestors = [parent]
+    ancestors.concat(parent.ancestors)
   end
 
   is_versioned_ext

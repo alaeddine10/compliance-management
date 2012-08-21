@@ -1,0 +1,28 @@
+-category_roots = Category.roots.all
+
+%ul.slugtree
+  %li
+    %ul
+      -@category_tree.each do |category, branches|
+        -if category.nil?
+          =render :partial => 'category_controls_branch',
+                  :locals  => { :subcategory => category, :controls => branches }
+        -else
+          %li
+            .row-fluid
+              .span12
+                .slot.subsystemslot.span12
+                  %span.prefix=category.name
+            %ul
+              -branches.each do |subcategory, controls|
+                =render :partial => 'category_controls_branch',
+                        :locals  => { :subcategory => subcategory, :controls => controls }
+
+.widgetStatus.row-fluid
+  .span5.fltrt
+    %a.btn.btn-blue.addbtn.fltrt{"data-toggle" => "modal", :href => "#"} Showing Controls
+  .span5.fltrt
+    %a#expand_all.widgetbtn.fltrt{:style => "margin-right:5px;"}
+      %i.gcmsicon-expandAll-grey
+    %a#shrink_all.widgetbtn.fltrt
+      %i.gcmsicon-shrinkAll-grey

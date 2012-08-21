@@ -2,6 +2,9 @@
 class System < ActiveRecord::Base
   include AuthoredModel
   include SluggedModel
+  include SearchableModel
+
+  attr_accessible :title, :slug, :description, :infrastructure, :is_biz_process, :type
 
   before_save :upcase_slug
 
@@ -11,11 +14,11 @@ class System < ActiveRecord::Base
     :uniqueness => { :message => "must be unique" }
 
   # Many to many with Control
-  has_many :system_controls
+  has_many :system_controls, :dependent => :destroy
   has_many :controls, :through => :system_controls, :order => :slug
 
   # Many to many with Section
-  has_many :system_sections
+  has_many :system_sections, :dependent => :destroy
   has_many :sections, :through => :system_sections, :order => :slug
 
   # Many to many with BizProcess
@@ -29,9 +32,29 @@ class System < ActiveRecord::Base
   has_many :system_persons
   has_many :persons, :through => :system_persons
 
+  has_many :object_people, :as => :personable, :dependent => :destroy
+  has_many :people, :through => :object_people
+
   # Relevant documentation
-  has_many :documents, :through => :document_systems
+  #has_many :documents, :through => :document_systems
   has_many :document_systems
+
+  has_many :object_documents, :as => :documentable, :dependent => :destroy
+  has_many :documents, :through => :object_documents
+
+  has_many :sub_system_systems, :dependent => :destroy,
+    :class_name => 'SystemSystem', :foreign_key => 'parent_id'
+  has_many :sub_systems,
+    :through => :sub_system_systems, :source => 'child'
+
+  has_many :super_system_systems, :dependent => :destroy,
+    :class_name => 'SystemSystem', :foreign_key => 'child_id'
+  has_many :super_systems,
+    :through => :super_system_systems, :source => 'parent'
+
+  has_many :transactions
+
+  belongs_to :type, :class_name => 'Option', :conditions => { :role => 'system_type' }
 
   is_versioned_ext
 

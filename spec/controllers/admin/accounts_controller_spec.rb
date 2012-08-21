@@ -13,7 +13,7 @@ describe Admin::AccountsController do
   describe "authorized" do
     before :each do
       login({}, { :role => 'superuser' })
-      @account = Account.create(:email => 'a@b.com', :role => 'analyst', :password => '1111', :password_confirmation => '1111')
+      @account = FactoryGirl.create(:account, :email => 'a@b.com', :role => 'analyst', :password => '1111', :password_confirmation => '1111')
     end
     describe "GET 'index'" do
       it "returns http success" do

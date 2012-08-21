@@ -42,7 +42,9 @@ class Admin::ControlsController < ApplicationController
 
   # Create a control
   def create
+    program = Program.find(params[:control].delete("program_id"))
     @control = Control.new(params[:control])
+    @control.program = program
 
     respond_to do |format|
       if @control.save
@@ -61,14 +63,17 @@ class Admin::ControlsController < ApplicationController
     @control = Control.find(params[:id])
 
     # Connect to related Control Objectives
-    co_ids = params["control"].delete("co_ids") || []
+    section_ids = params["control"].delete("section_ids") || []
 
-    if !equal_ids(co_ids, @control.sections)
-      @control.sections = []
-      co_ids.each do |co_id|
-        co = Section.find(co_id)
-        @control.sections << co
+    if !equal_ids(section_ids, @control.sections)
+      sections = []
+      section_ids.each do |section_id|
+        unless section_id.blank?
+          section = Section.find(section_id)
+          sections << section
+        end
       end
+      @control.sections = sections
     end
 
     respond_to do |format|
