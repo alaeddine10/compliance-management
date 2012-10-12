@@ -9,6 +9,7 @@
  *= require tmpl
  *= require_self
  *= require impact
+ *= require jquery.remotipart
  */
 
 // Initialize delegated event handlers
