@@ -168,7 +168,7 @@ class ProgramsController < ApplicationController
       @errors = import[:errors]
       @creates = import[:creates]
       @updates = import[:updates]
-      render 'import_result'
+      render 'import_result', :layout => false
     end
   end
 

@@ -309,3 +309,8 @@ function clear_selection(el, keep_search) {
 
   update_map_buttons();
 }
+
+jQuery(function($) {
+  $('body').on('ajax:success',
+               'form[data-remote][data-update-target]', function(e, data, status, xhr) { $($(this).data('update-target')).html(data) });
+});
