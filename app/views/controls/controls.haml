@@ -1,17 +1,39 @@
 -# Requires 'controls' and 'prefix'
+%div{:'ng-controller' => "Controls"}
+  %textarea{:'ng-hide' => "true", :'ng-model' => "flat" }  
+    =walk_slug_tree(Program.slugtree(controls), nil, :json) do |item, step| 
+      -hash = item.as_json
+      -ctl = hash[:control]
+      -ctl[:'url'] = flow_control_path(item)
+      -hash[:'control.prefix'] = prefix 
+      "object" : #{hash.to_json}
 
-%ul.slugtree
-  =walk_slug_tree(Program.slugtree(controls)) do |item, step|
-    .row-fluid
-      -content_id = "content_#{rand(36**8).to_s(36)}" # unique ID for toggle
-      .span12
-        .span12.slot.controlslot{ :'data-toggle' => 'collapse', :'data-target' => "##{content_id}" }
-          %a.widgetbtn.fltrt{ :href => flow_control_path(item), :title => 'View Control' }
-            %i.gcmsicon-arrowright-grey
-          .expander
-          %span.prefix
-            =prefix
-            =item.slug
-          =item.title || item.description
-      .row-fluid-slotcontent.collapse{ :id => content_id }
-        %p=item.description
+  %slugtree{:'ng-model' => "tree"}
+    %li{ :class => "content_{{prefix}}" }
+      .row-fluid
+        .span12
+          .span12.slot.controlslot{ :'data-toggle' => 'collapse', :'data-target' => "{{content_id}}" }
+            %a.widgetbtn.fltrt{ :href => "{{url}}", :title => 'View Control' }
+              %i.gcmsicon-arrowright-grey
+            .expander
+            %span.prefix
+              \{{prefix}}
+              \{{slug}}
+            \{{ control.title || control.description }}
+        .row-fluid-slotcontent.collapse{ :id => "{{content_id}}" }
+          %p
+            \{{control.description}}
+
+  %ul
+    %li{:'ng-repeat' => "control in tree.children"}
+      \{{control.title}}
+      \{{$index}} : {{control.content_id}}
+
+:javascript
+  (function(injector) {
+    injector.get("$compile")
+      ($("[ng-controller=Controls]"))
+      (injector.get("$rootScope"));
+
+    $("[ng-controller=Controls]").scope().$digest();
+  })($(document.body).injector());

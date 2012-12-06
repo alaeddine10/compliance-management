@@ -7,6 +7,8 @@
  *= require related_selector
  *= require spin.min
  *= require tmpl
+ *= require angular
+ *= require angular_tree
  *= require_self
  *= require jquery.remotipart
  *= require d3.v2

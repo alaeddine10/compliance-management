@@ -22,7 +22,7 @@
     :javascript
       jQuery(function($) { $('head').append("<link href='https://fonts.googleapis.com/css?family=PT+Sans' rel='stylesheet' type='text/css'></link>"); });
 
-  %body{ :class => "#{has_feature?(:BETA) ? 'BETA' : ''}" }
+  %body{ :class => "#{has_feature?(:BETA) ? 'BETA' : ''}", :'ng-app' => "GRC" }
     .navbar.navbar-fixed-top
       .navbar-inner#pageheader
         .row-static.container
